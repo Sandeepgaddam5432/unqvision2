@@ -66,7 +66,10 @@ const Index = () => {
         return;
       }
 
-      const response = await fetch(`${API_URL}/generation-status/${sid}`);
+      // Remove trailing slash from apiUrl if it exists
+      let apiUrl = API_URL.replace(/\/$/, "");
+
+      const response = await fetch(`${apiUrl}/generation-status/${sid}`);
       const data = await response.json();
       
       if (!response.ok) {
@@ -89,7 +92,9 @@ const Index = () => {
       
       // Check if generation is complete
       if (data.isComplete && data.videoUrl) {
-        setVideoUrl(`${API_URL}${data.videoUrl}`);
+        // Remove trailing slash from apiUrl if it exists
+        apiUrl = API_URL.replace(/\/$/, "");
+        setVideoUrl(`${apiUrl}${data.videoUrl}`);
         setIsVideoReady(true);
         setIsGenerating(false);
         setSessionId(null);
@@ -135,8 +140,11 @@ const Index = () => {
         return;
       }
 
+      // Remove trailing slash from apiUrl if it exists
+      const apiUrl = API_URL.replace(/\/$/, "");
+
       // Start the video generation on the server
-      const response = await fetch(`${API_URL}/generate-video`, {
+      const response = await fetch(`${apiUrl}/generate-video`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

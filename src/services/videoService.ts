@@ -44,6 +44,9 @@ export const generateVideo = async (config: VideoGenerationConfig): Promise<stri
       throw new Error('Frontend API URL is not configured.');
     }
     
+    // Remove trailing slash from apiUrl if it exists
+    const apiUrl = API_URL.replace(/\/$/, "");
+    
     // This is a fallback implementation, not actually used in the current version
     onLogUpdate('✅ Sending request to Colab server...', 'processing');
     
