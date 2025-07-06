@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ConfigurationPanel } from '@/components/ConfigurationPanel';
 import { StatusPanel, LogEntry } from '@/components/StatusPanel';
 import { PreviewPanel } from '@/components/PreviewPanel';
 import { generateVideo } from '@/services/videoService';
 import { toast } from 'sonner';
+
+// API URL from environment variables
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 const Index = () => {
   const [logs, setLogs] = useState<LogEntry[]>([
@@ -17,6 +20,31 @@ const Index = () => {
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [isVideoReady, setIsVideoReady] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [pollingInterval, setPollingInterval] = useState<number | null>(null);
+
+  // Set up status polling when session ID changes
+  useEffect(() => {
+    if (sessionId && isGenerating) {
+      // Start polling for status updates
+      const intervalId = window.setInterval(() => {
+        pollGenerationStatus(sessionId);
+      }, 2000);
+      
+      setPollingInterval(intervalId);
+      
+      // Cleanup interval on component unmount or when session ends
+      return () => {
+        if (intervalId) {
+          window.clearInterval(intervalId);
+        }
+      };
+    } else if (!isGenerating && pollingInterval) {
+      // Clear polling when generation ends
+      window.clearInterval(pollingInterval);
+      setPollingInterval(null);
+    }
+  }, [sessionId, isGenerating]);
 
   const addLog = (message: string, type: LogEntry['type'] = 'info') => {
     const newLog: LogEntry = {
@@ -26,6 +54,50 @@ const Index = () => {
       type
     };
     setLogs(prev => [...prev, newLog]);
+  };
+
+  // Poll the server for generation status updates
+  const pollGenerationStatus = async (sid: string) => {
+    try {
+      const response = await fetch(`${API_URL}/generation-status/${sid}`);
+      const data = await response.json();
+      
+      if (!response.ok) {
+        console.error('Status polling error:', data.error);
+        return;
+      }
+      
+      // Update logs with new progress updates
+      if (data.progressUpdates && Array.isArray(data.progressUpdates)) {
+        // Only add logs that we don't already have
+        const existingLogIds = new Set(logs.map(log => log.id));
+        const newLogs = data.progressUpdates.filter(
+          (update: LogEntry) => !existingLogIds.has(update.id)
+        );
+        
+        if (newLogs.length > 0) {
+          setLogs(prev => [...prev, ...newLogs]);
+        }
+      }
+      
+      // Check if generation is complete
+      if (data.isComplete && data.videoUrl) {
+        setVideoUrl(`${API_URL}${data.videoUrl}`);
+        setIsVideoReady(true);
+        setIsGenerating(false);
+        setSessionId(null);
+        toast.success('Video generation completed!');
+      }
+      
+      // Check for errors
+      if (data.isError) {
+        setIsGenerating(false);
+        setSessionId(null);
+        toast.error('Video generation failed. Check the logs for details.');
+      }
+    } catch (error) {
+      console.error('Error polling generation status:', error);
+    }
   };
 
   const handleGenerate = async (config: {
@@ -45,19 +117,28 @@ const Index = () => {
     setLogs([]);
     
     // Add initial log
-    addLog("🚀 Starting video generation on server...", 'info');
+    addLog("🚀 Starting video generation on Colab server...", 'info');
 
     try {
-      // The video generation is now done on the server
-      const videoUrl = await generateVideo({
-        ...config,
-        onLogUpdate: addLog
+      // Start the video generation on the server
+      const response = await fetch(`${API_URL}/generate-video`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(config)
       });
       
-      setVideoUrl(videoUrl);
-      setIsVideoReady(true);
-      toast.success('Video generation completed!');
-      addLog("✅ Video generation complete! Ready to play and download.", 'success');
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to start video generation');
+      }
+      
+      // Save the session ID for polling
+      setSessionId(data.sessionId);
+      
+      addLog(`✅ Video generation started on server (Session ID: ${data.sessionId.substring(0, 8)}...)`, 'success');
     } catch (error) {
       console.error('Generation failed:', error);
       
@@ -65,12 +146,11 @@ const Index = () => {
       const errorMessage = error?.message || 'Video generation failed due to unknown reasons';
       toast.error(`Generation failed: ${errorMessage}`);
       
-      // Add a special log entry for server errors
       addLog(
         "Video generation failed. The server might be experiencing issues. Please try again later.",
         'warning'
       );
-    } finally {
+      
       setIsGenerating(false);
     }
   };
@@ -107,7 +187,7 @@ const Index = () => {
             {/* Server status indicator */}
             <div className="text-sm text-gray-300">
               <span className="inline-block w-2 h-2 rounded-full bg-green-500 mr-2"></span>
-              Server-powered
+              Colab-powered
             </div>
           </div>
         </div>

@@ -21,6 +21,7 @@ export default defineConfig(({ mode }) => ({
   },
   define: {
     // Provide default values for environment variables
-    'import.meta.env.VITE_API_URL': JSON.stringify(process.env.VITE_API_URL || 'http://localhost:3001'),
+    // Use localhost:8000 for local development with Colab server
+    'import.meta.env.VITE_API_URL': JSON.stringify(process.env.VITE_API_URL || 'http://localhost:8000'),
   },
 }));

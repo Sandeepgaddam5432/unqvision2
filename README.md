@@ -2,46 +2,39 @@
 
 ## Architecture Overview
 
-UnQVision now uses a client-server architecture to handle resource-intensive video generation:
+UnQVision now uses a Colab-based backend to handle resource-intensive video generation:
 
 - **Frontend (client)**: React application that handles user interface and API calls
-- **Backend (server)**: Node.js Express server that processes video generation using FFmpeg
+- **Backend (Colab)**: Python-based Flask server running on Google Colab that processes video generation using ffmpeg-python
 
-This architecture allows the application to work on devices with limited resources, as the heavy processing is offloaded to the server.
+This architecture allows the application to work on devices with limited resources by offloading the heavy processing to Google Colab's free computing resources.
 
-## Setup and Development
+## 🚀 Run the Backend on Google Colab
 
-### Prerequisites
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/YOUR_USERNAME/YOUR_REPO_NAME/blob/main/UnQVision_Video_Server.ipynb)
 
-- Node.js & npm - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-- FFmpeg - Required on the server machine (see server/README.md for installation instructions)
+1. Click the "Open in Colab" button above to open the notebook
+2. Follow the notebook instructions to:
+   - Enter your API keys (Google Gemini, Pexels)
+   - Run all cells to start the server
+   - Copy the Cloudflare Tunnel URL provided at the end
 
-### Running the Frontend
+The notebook creates a Flask server and exposes it using Cloudflare Tunnels, giving you a stable HTTPS URL that you can use with the frontend.
+
+## Running the Frontend
 
 ```sh
 # Install dependencies
 npm install
+
+# Set the Colab backend URL in .env.local
+echo "VITE_API_URL=https://your-cloudflare-tunnel-url.trycloudflare.com" > .env.local
 
 # Start the development server
 npm run dev
 ```
 
 The frontend will be available at http://localhost:8080
-
-### Running the Backend
-
-```sh
-# Navigate to the server directory
-cd server
-
-# Install dependencies
-npm install
-
-# Start the server
-npm start
-```
-
-The backend will be available at http://localhost:3001
 
 ## Project Technologies
 
@@ -54,19 +47,25 @@ This project is built with:
   - shadcn-ui
   - Tailwind CSS
 
-- **Backend**:
-  - Node.js
-  - Express
-  - fluent-ffmpeg
-  - fs-extra
+- **Backend (Colab)**:
+  - Python
+  - Flask
+  - ffmpeg-python
+  - Cloudflare Tunnels
 
 ## Deployment
 
 For production deployment:
 
-1. Deploy the backend server to a machine with sufficient resources
-2. Update the frontend's `VITE_API_URL` environment variable to point to your backend server
-3. Deploy the frontend to a hosting platform like Vercel
+1. Run the Colab notebook to get a stable Cloudflare Tunnel URL
+2. Deploy the frontend to a hosting platform like Vercel
+3. Configure the `VITE_API_URL` environment variable in your hosting platform to point to your Cloudflare Tunnel URL
+
+## Important Notes
+
+- The Colab backend will automatically disconnect after 90 minutes of inactivity
+- You'll need to restart the notebook if it disconnects
+- The Cloudflare Tunnel URL will remain stable across sessions as long as you authenticate with the same Cloudflare account
 
 ## Project Details
 
@@ -74,8 +73,9 @@ For production deployment:
 
 ## Additional Resources
 
-- For more information about the backend, see [server/README.md](server/README.md)
-- To learn about API endpoints, consult the backend documentation
+- [Google Colab Documentation](https://colab.research.google.com/)
+- [Cloudflare Tunnels Documentation](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/)
+- [Flask Documentation](https://flask.palletsprojects.com/)
 
 ## How can I edit this code?
 

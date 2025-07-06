@@ -1,6 +1,5 @@
-import { retryWithDifferentKeys } from '@/utils/apiUtils';
-import { generateSpeech } from './ttsService';
-import { initializeFFmpeg, concatenateVideosWithTransitions, mergeVideoWithAudio } from './ffmpegService';
+// This file is now just a placeholder since video generation is handled by the Colab server
+// and directly called from Index.tsx
 
 export interface VideoGenerationConfig {
   projectTitle: string;
@@ -23,8 +22,10 @@ export interface ScenePlan {
 }
 
 // The API URL should be configurable for development vs production
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
+// This function is no longer used as the video generation API is called directly from Index.tsx
+// Kept for backward compatibility or if we need to revert to the old approach
 export const generateVideo = async (config: VideoGenerationConfig): Promise<string> => {
   const { onLogUpdate } = config;
   
@@ -34,54 +35,12 @@ export const generateVideo = async (config: VideoGenerationConfig): Promise<stri
       throw new Error('Video generation can only run in a browser environment');
     }
 
-    onLogUpdate('✅ Sending request to server...', 'processing');
+    onLogUpdate('⚠️ This function is deprecated. Video generation is now handled directly by Index.tsx', 'warning');
     
-    // Validate inputs
-    if (!config.projectTitle || !config.mainPrompt) {
-      throw new Error('Project title and prompt are required');
-    }
-    if (!config.googleApiKeys || !config.pexelsApiKeys) {
-      throw new Error('API keys are required');
-    }
-    if (config.languages.length === 0) {
-      throw new Error('At least one language must be selected');
-    }
-
-    // Call the backend API to generate the video
-    const response = await fetch(`${API_URL}/generate-video`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        projectTitle: config.projectTitle,
-        mainPrompt: config.mainPrompt,
-        languages: config.languages,
-        googleApiKeys: config.googleApiKeys,
-        pexelsApiKeys: config.pexelsApiKeys,
-        textModel: config.textModel,
-        voiceModel: config.voiceModel
-      })
-    });
-
-    const result = await response.json();
+    // This is a fallback implementation, not actually used in the current version
+    onLogUpdate('✅ Sending request to Colab server...', 'processing');
     
-    if (!response.ok) {
-      throw new Error(result.error || 'Server error during video generation');
-    }
-
-    // Display any progress updates received from the server
-    if (result.progressUpdates && Array.isArray(result.progressUpdates)) {
-      result.progressUpdates.forEach((update: any) => {
-        onLogUpdate(update.message, update.type as any);
-      });
-    }
-
-    // Construct the full video URL
-    const videoUrl = `${API_URL}${result.videoUrl}`;
-    onLogUpdate(`✅ Video processing completed!`, 'success');
-    
-    return videoUrl;
+    throw new Error('This function is deprecated. Video generation is now handled directly in the Index component.');
   } catch (error: any) {
     const errorMessage = error?.message || 'undefined';
     const userFriendlyMessage = errorMessage === 'undefined' 
