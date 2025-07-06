@@ -22,7 +22,8 @@ export interface ScenePlan {
 }
 
 // The API URL should be configurable for development vs production
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+// Removed the default value to ensure we're explicitly using the environment variable
+const API_URL = import.meta.env.VITE_API_URL;
 
 // This function is no longer used as the video generation API is called directly from Index.tsx
 // Kept for backward compatibility or if we need to revert to the old approach
@@ -36,6 +37,12 @@ export const generateVideo = async (config: VideoGenerationConfig): Promise<stri
     }
 
     onLogUpdate('⚠️ This function is deprecated. Video generation is now handled directly by Index.tsx', 'warning');
+    
+    // Check if API URL is configured
+    if (!API_URL) {
+      onLogUpdate('❌ Error: VITE_API_URL is not set in the frontend environment.', 'warning');
+      throw new Error('Frontend API URL is not configured.');
+    }
     
     // This is a fallback implementation, not actually used in the current version
     onLogUpdate('✅ Sending request to Colab server...', 'processing');

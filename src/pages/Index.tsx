@@ -5,8 +5,8 @@ import { PreviewPanel } from '@/components/PreviewPanel';
 import { generateVideo } from '@/services/videoService';
 import { toast } from 'sonner';
 
-// API URL from environment variables
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+// API URL from environment variables - remove default value to ensure explicit env var usage
+const API_URL = import.meta.env.VITE_API_URL;
 
 const Index = () => {
   const [logs, setLogs] = useState<LogEntry[]>([
@@ -59,6 +59,13 @@ const Index = () => {
   // Poll the server for generation status updates
   const pollGenerationStatus = async (sid: string) => {
     try {
+      // Verify API URL is set
+      if (!API_URL) {
+        console.error('Error: VITE_API_URL is not set in the frontend environment.');
+        addLog('❌ Error: API URL is not configured properly.', 'warning');
+        return;
+      }
+
       const response = await fetch(`${API_URL}/generation-status/${sid}`);
       const data = await response.json();
       
@@ -120,6 +127,14 @@ const Index = () => {
     addLog("🚀 Starting video generation on Colab server...", 'info');
 
     try {
+      // Verify API URL is set
+      if (!API_URL) {
+        console.error('Error: VITE_API_URL is not set in the frontend environment.');
+        addLog('❌ Error: API URL is not configured properly.', 'warning');
+        setIsGenerating(false);
+        return;
+      }
+
       // Start the video generation on the server
       const response = await fetch(`${API_URL}/generate-video`, {
         method: 'POST',
@@ -140,10 +155,11 @@ const Index = () => {
       
       addLog(`✅ Video generation started on server (Session ID: ${data.sessionId.substring(0, 8)}...)`, 'success');
     } catch (error) {
-      console.error('Generation failed:', error);
+      // Log the full error object for debugging
+      console.error('Full error object:', error);
       
       // Improved error message handling
-      const errorMessage = error?.message || 'Video generation failed due to unknown reasons';
+      const errorMessage = error instanceof Error ? error.message : 'Video generation failed due to unknown reasons';
       toast.error(`Generation failed: ${errorMessage}`);
       
       addLog(
