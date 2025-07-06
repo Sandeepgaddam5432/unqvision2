@@ -11,7 +11,7 @@ This architecture allows the application to work on devices with limited resourc
 
 ## 🚀 Run the Backend on Google Colab
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/YOUR_USERNAME/YOUR_REPO_NAME/blob/main/UnQVision_Video_Server.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Sandeepgaddam5432/unqvision2/blob/main/UnQVision_Video_Server.ipynb)
 
 1. Click the "Open in Colab" button above to open the notebook
 2. Follow the notebook instructions to:
