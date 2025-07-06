@@ -11,13 +11,18 @@ This architecture allows the application to work on devices with limited resourc
 
 ## 🚀 Run the Backend on Google Colab
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Sandeepgaddam5432/unqvision2/blob/main/UnQVision_Video_Server.ipynb)
+Since direct GitHub integration is having issues, follow these steps:
 
-1. Click the "Open in Colab" button above to open the notebook
-2. Follow the notebook instructions to:
+1. Open Google Colab: [https://colab.research.google.com/](https://colab.research.google.com/)
+2. Click "File" > "Upload notebook"
+3. Upload the `UnQVision_Video_Server.ipynb` file from this repository
+4. Follow the notebook instructions to:
    - Enter your API keys (Google Gemini, Pexels)
    - Run all cells to start the server
    - Copy the Cloudflare Tunnel URL provided at the end
+
+Alternatively, you can try the direct Colab link (if GitHub integration is working):
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Sandeepgaddam5432/unqvision2/blob/main/UnQVision_Video_Server.ipynb)
 
 The notebook creates a Flask server and exposes it using Cloudflare Tunnels, giving you a stable HTTPS URL that you can use with the frontend.
 
