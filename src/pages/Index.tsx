@@ -43,8 +43,12 @@ const Index = () => {
     
     // Clear previous logs
     setLogs([]);
+    
+    // Add initial log
+    addLog("🚀 Starting video generation on server...", 'info');
 
     try {
+      // The video generation is now done on the server
       const videoUrl = await generateVideo({
         ...config,
         onLogUpdate: addLog
@@ -53,16 +57,17 @@ const Index = () => {
       setVideoUrl(videoUrl);
       setIsVideoReady(true);
       toast.success('Video generation completed!');
+      addLog("✅ Video generation complete! Ready to play and download.", 'success');
     } catch (error) {
       console.error('Generation failed:', error);
       
       // Improved error message handling
-      const errorMessage = error?.message || 'Video generation failed due to unknown reasons, possibly resource limitations';
+      const errorMessage = error?.message || 'Video generation failed due to unknown reasons';
       toast.error(`Generation failed: ${errorMessage}`);
       
-      // Add a special log entry for severe errors
+      // Add a special log entry for server errors
       addLog(
-        "Video generation failed. If you're using this app in a deployed environment (like Vercel), this might be due to resource limitations. Consider running the application locally for better performance.",
+        "Video generation failed. The server might be experiencing issues. Please try again later.",
         'warning'
       );
     } finally {
@@ -72,6 +77,7 @@ const Index = () => {
 
   const handleDownload = () => {
     if (videoUrl) {
+      // For server-generated videos, we directly use the URL as is
       const link = document.createElement('a');
       link.href = videoUrl;
       link.download = 'unqvision-video.mp4';
@@ -96,6 +102,12 @@ const Index = () => {
               <span className="text-sm text-blue-400 bg-blue-400/10 px-2 py-1 rounded-full">
                 AI Video Generator
               </span>
+            </div>
+            
+            {/* Server status indicator */}
+            <div className="text-sm text-gray-300">
+              <span className="inline-block w-2 h-2 rounded-full bg-green-500 mr-2"></span>
+              Server-powered
             </div>
           </div>
         </div>
